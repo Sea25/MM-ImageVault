@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> MM Image Vault</title>
+</head>
+<body>
+    <h1>MM ImageVault</h1>
+
+    <p>
+        Upload, Download and Manage Images
+    </p>
+    <hr>
+    <h2>Upload Images</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="images" multiple>
+        <br><br>
+
+        <button type="submit">
+            Upload Images
+        </button>
+    </form>
+</body>
+</html>
