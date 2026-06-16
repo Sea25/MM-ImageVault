@@ -21,6 +21,7 @@
             Upload Images
         </button>
     </form>
+
     <hr>
 
     <h2>Uploaded Images</h2>
@@ -30,15 +31,21 @@
             <div>
                 <p>{{img.image.name}}</p>
                 <img src="{{img.image.url}}" width="'150">
-                <br>
+               
+                <p><strong>Format:</strong> {{ img.file_format }}</p>
+                <p><strong>Size:</strong>{{ img.file_size }}</p>
+                <p><strong>Uploaded:</strong>{{ img.uploaded_at }}</p>
+                <p><strong>Expires:</strong>{{ img.expires_at }}</p>
+
                 <a href="{{img.image.url}}" download>Download</a>
-                <br>
+                <br><br>
                 <a href="{% url 'delete_image' img.id%}">Delete</a>
             </div>
+
             <hr>
         {% endfor %}
     {% else %}
-            <p>No images uploaded yet.</p>
+        <p>No images uploaded yet.</p>
     {% endif %}
     
 </body>

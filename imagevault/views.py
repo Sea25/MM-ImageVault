@@ -8,15 +8,20 @@ def home(request):
 
         for image in images:
             ImageFile.objects.create(image=image)
+        
         return redirect('home')
 
     uploaded_images = ImageFile.objects.all().order_by('-uploaded_at')
 
-    return render(request, 'imagevault/home.html', {'uploaded_images': uploaded_images})
+    return render(request, 'imagevault/home.html', {'uploaded_images': uploaded_images
+    })
 
 def delete_image(request, id):
     image=get_object_or_404(ImageFile, id=id)
+
     if image.image and os.path.isfile(image.image.path):
         os.remove(image.image.path)
+
     image.delete()
+    
     return redirect('home')
