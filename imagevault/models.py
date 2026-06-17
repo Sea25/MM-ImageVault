@@ -2,34 +2,23 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 
-class ImageFile(models.Model):
-    image=models.ImageField(upload_to='images/')
-    uploaded_at=models.DateTimeField(auto_now_add=True)
-    expires_at=models.DateTimeField()
+
+class ConvertedImage(models.Model):
+    original_image = models.ImageField(upload_to='originals/')
+    converted_image = models.ImageField(upload_to='converted/', blank=True, null=True)
+    original_format = models.CharField(max_length=20, blank=True)
+    output_format = models.CharField(max_length=20)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
 
     def save(self, *args, **kwargs):
+        if self.original_image and not self.original_format:
+            self.original_format = self.original_image.name.split('.')[-1].upper()
+
         if not self.expires_at:
-            self.expires_at=timezone.now()+timedelta(days=4)
+            self.expires_at = timezone.now() + timedelta(days=4)
+
         super().save(*args, **kwargs)
-    
 
-@property
-def file_size(self):
-    try:
-        size= self.image.file.size
-
-        if size < 1024:
-            return f"{size} Bytes"
-        elif size < 1024 *1024:
-            return f"{round(size / 1024, 2)} KB"
-        else:
-            return f"{round(size  / (1024 * 1024), 2)} MB"
-    except Exception:
-        return "Unknown"
-
-@property
-def file_format(self):
-    return self.image.name.split('.')[-1].upper()
-
-def _str_(self):
-    return self.image.name
+    def __str__(self):
+        return self.original_image.name

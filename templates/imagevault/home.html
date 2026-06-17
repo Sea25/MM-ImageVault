@@ -1,52 +1,72 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title> MM Image Vault</title>
+    <title>MM ImageVault</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 <body>
+
+<div class="container">
+
     <h1>MM ImageVault</h1>
+    <p class="subtitle">Universal Image Format Converter</p>
 
-    <p>
-        Upload, Download and Manage Images
-    </p>
-    <hr>
-    <h2>Upload Images</h2>
+    <div class="upload-box">
+        <h2>Convert Image</h2>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="images" multiple>
-        <br><br>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-        <button type="submit">
-            Upload Images
-        </button>
-    </form>
+            <label>Select Image</label><br><br>
+            <input type="file" name="image" required>
 
-    <hr>
+            <br><br>
 
-    <h2>Uploaded Images</h2>
+            <label>Convert To</label><br><br>
+            <select name="output_format" required>
+                <option value="PNG">PNG</option>
+                <option value="JPEG">JPG</option>
+                <option value="WEBP">WEBP</option>
+                <option value="BMP">BMP</option>
+                <option value="TIFF">TIFF</option>
+            </select>
 
-    {% if uploaded_images %}
-        {% for img in uploaded_images %}
-            <div>
-                <p>{{img.image.name}}</p>
-                <img src="{{img.image.url}}" width="'150">
-               
-                <p><strong>Format:</strong> {{ img.file_format }}</p>
-                <p><strong>Size:</strong>{{ img.file_size }}</p>
-                <p><strong>Uploaded:</strong>{{ img.uploaded_at }}</p>
-                <p><strong>Expires:</strong>{{ img.expires_at }}</p>
+            <br><br>
 
-                <a href="{{img.image.url}}" download>Download</a>
-                <br><br>
-                <a href="{% url 'delete_image' img.id%}">Delete</a>
+            <button type="submit">Convert Image</button>
+        </form>
+    </div>
+
+    <h2>Converted Images</h2>
+
+    {% if images %}
+        {% for img in images %}
+            <div class="image-card">
+                <p><strong>Original File:</strong> {{ img.original_image.name }}</p>
+                <p><strong>Original Format:</strong> {{ img.original_format }}</p>
+                <p><strong>Converted To:</strong> {{ img.output_format }}</p>
+                <p><strong>Uploaded:</strong> {{ img.uploaded_at }}</p>
+                <p><strong>Expires:</strong> {{ img.expires_at }}</p>
+
+                {% if img.converted_image %}
+                    <a href="{{ img.converted_image.url }}" download class="download-btn">
+                        Download Converted Image
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'delete_image' img.id %}" class="delete-btn">
+                    Delete
+                </a>
             </div>
-
-            <hr>
         {% endfor %}
     {% else %}
-        <p>No images uploaded yet.</p>
+        <p>No converted images yet.</p>
     {% endif %}
-    
+
+</div>
+
 </body>
 </html>
