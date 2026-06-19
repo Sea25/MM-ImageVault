@@ -6,103 +6,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MM ImageVault</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <header class="site-header">
-    <div class="header-inner">
-        <div class="header-brand">
-            <h1 class="brand-title">MM ImageVault</h1>
-        </div>
-    </div>
+    <h1>MM ImageVault</h1>
+    <p>Universal Image Format Converter</p>
 </header>
 
 <main class="main-content">
+    <section class="converter-card">
+        <h2>Convert Image</h2>
+        <form method="POST" enctype="multipart/form-data" id="convertForm">
+            {% csrf_token %}
 
-    <div class="top-grid">
-        <section class="card upload-card">
-            <div class="card-header">
-                <div class="card-header-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <!-- Drop zone / preview -->
+            <div class="drop-zone" id="dropZone">
+                <input type="file" name="image" id="imageInput" required hidden accept="image/*,.heic,.heif,.ico,.gif,.bmp,.tiff,.tif">
+
+                <div class="upload-content" id="uploadContent">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#264fc4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p class="drop-title">Drag & Drop Image Here</p>
+                    <p class="drop-sub">or</p>
+                    <button type="button" class="browse-btn" id="browseBtn">Browse File</button>
+                    <p class="drop-hint">JPG, PNG, WEBP, BMP, TIFF, GIF, HEIC/HEIF, ICO</p>
                 </div>
-                <h2 class="card-title">Convert Image</h2>
+
+                <div class="preview-box" id="previewBox">
+                    <img id="imagePreview" class="preview-img" alt="Preview">
+                    <div id="heifBadge" class="heif-badge" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        HEIC/HEIF — preview loading…
+                    </div>
+                    <div class="preview-meta">
+                        <span id="fileName" class="meta-name"></span>
+                        <span id="fileSize" class="meta-size"></span>
+                    </div>
+                    <button type="button" class="change-btn" id="changeBtn">Change file</button>
+                </div>
             </div>
-            <form method="POST" enctype="multipart/form-data" class="convert-form">
-                {% csrf_token %}
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" for="image-input">Select Image</label>
-                        <div class="file-input-wrapper">
-                            <input type="file" name="image" id="image-input" required class="file-input">
-                            <div class="file-input-ui" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                <span class="file-input-label">Choose a file&hellip;</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group form-group-format">
-                        <label class="form-label" for="output-format">Convert To</label>
-                        <div class="select-wrapper">
-                            <select name="output_format" id="output-format" required class="form-select">
-                                <option value="PNG">PNG</option>
-                                <option value="JPEG">JPG</option>
-                                <option value="WEBP">WEBP</option>
-                                <option value="BMP">BMP</option>
-                                <option value="TIFF">TIFF</option>
-                            </select>
-                            <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                    </div>
-                    <div class="form-group form-group-btn">
-                        <label class="form-label" style="visibility:hidden;">Convert</label>
-                        <button type="submit" class="btn-primary">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                            Convert Image
-                        </button>
-                    </div>
+
+            <!-- Format + Submit -->
+            <div class="bottom-row">
+                <div class="format-group">
+                    <label for="outputFormat">Convert To</label>
+                    <select name="output_format" id="outputFormat" required>
+                        <option value="PNG">PNG</option>
+                        <option value="JPEG">JPG</option>
+                        <option value="WEBP">WEBP</option>
+                        <option value="BMP">BMP</option>
+                        <option value="TIFF">TIFF</option>
+                        <option value="ICO">ICO</option>
+                    </select>
                 </div>
-                <p class="form-hint">Supports JPG, PNG, WEBP, BMP, TIFF, HEIC/HEIF &mdash; original resolution preserved as much as possible.</p>
-            </form>
-        </section>
+                <div class="format-group" id="icoSizeGroup" style="display:none">
+                    <label for="icoSize">ICO Size</label>
+                    <select name="ico_size" id="icoSize">
+                        <option value="original">Original Size</option>
+                        <option value="256">256 × 256</option>
+                        <option value="128">128 × 128</option>
+                        <option value="64">64 × 64</option>
+                        <option value="48">48 × 48</option>
+                        <option value="32">32 × 32</option>
+                        <option value="16">16 × 16</option>
+                    </select>
+                </div>
+                <button type="submit" class="convert-btn" id="convertBtn">Convert Image</button>
+            </div>
+
+            <p class="form-hint">Original resolution is preserved as much as possible.</p>
+        </form>
+    </section>
+
+    <!-- Progress bar (hidden until submit) -->
+    <div class="progress-wrap" id="progressWrap">
+        <div class="progress-label">Converting… <span id="progressPct">0%</span></div>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
     </div>
 
     <section class="results-section">
         <div class="results-header">
-            <h2 class="results-title">Converted Images</h2>
-            {% if images %}<span class="results-count">{{ images|length }} file{% if images|length != 1 %}s{% endif %}</span>{% endif %}
+            <h2>Converted Images</h2>
+            {% if images %}<span class="badge">{{ images|length }} file{% if images|length != 1 %}s{% endif %}</span>{% endif %}
         </div>
+
         {% if images %}
-        <div class="table-wrapper">
-            <table class="images-table">
+        <div class="table-wrap">
+            <table>
                 <thead>
-                    <tr>
-                        <th>Original File</th><th>Original</th><th>Converted To</th><th>Uploaded</th><th>Expires</th><th>Actions</th>
-                    </tr>
+                    <tr><th>Original File</th><th>From</th><th>To</th><th>Converted Size</th><th>Uploaded</th><th>Expires</th><th>Download</th><th>Delete</th></tr>
                 </thead>
                 <tbody>
                     {% for img in images %}
                     <tr>
-                        <td><span class="file-name">{{ img.original_image.name }}</span></td>
-                        <td><span class="format-badge format-original">{{ img.original_format }}</span></td>
-                        <td><span class="format-badge format-converted">{{ img.output_format }}</span></td>
-                        <td><span class="date-text">{{ img.uploaded_at }}</span></td>
-                        <td><span class="date-text expiry">{{ img.expires_at }}</span></td>
+                        <td class="file-name">{{ img.original_image.name }}</td>
+                        <td><span class="fmt-badge fmt-orig">{{ img.original_format }}</span></td>
+                        <td><span class="fmt-badge fmt-conv">{{ img.output_format }}</span></td>
+                        <td class="date-cell">{{ img.converted_file_size|filesizeformat }}</td>
+                        <td class="date-cell">{{ img.uploaded_at|date:"d M Y, h:i A" }}</td>
+                        <td class="date-cell expiry">{{ img.expires_at|date:"d M Y, h:i A" }}</td>
                         <td>
-                            <div class="action-group">
-                                {% if img.converted_image %}
-                                <a href="{{ img.converted_image.url }}" download class="btn-download">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Download
-                                </a>
-                                {% endif %}
-                                <a href="{% url 'delete_image' img.id %}" class="btn-delete" onclick="return confirm('Delete this converted image?');">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                    Delete
-                                </a>
-                            </div>
+                            {% if img.converted_image %}
+                            <a href="{{ img.converted_image.url }}" download class="dl-btn">&#8595; Download</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'delete_image' img.id %}" class="del-btn" onclick="return confirm('Delete this image?')">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -111,22 +121,109 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </div>
-            <p class="empty-title">No converted images yet</p>
-            <p class="empty-sub">Upload an image above to get started.</p>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b0bcd4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p>No converted images yet.</p>
         </div>
         {% endif %}
     </section>
 
 </main>
 
-<footer class="site-footer"><p>MM ImageVault &mdash; Malayala Manorama Internal Tool</p></footer>
+<footer><p>MM ImageVault &mdash; Malayala Manorama Internal Tool</p></footer>
 
 <script>
-    const fi = document.getElementById('image-input'), fl = document.querySelector('.file-input-label');
-    if (fi && fl) fi.addEventListener('change', function(){ fl.textContent = this.files[0] ? this.files[0].name : 'Choose a file\u2026'; });
+const dropZone = document.getElementById('dropZone');
+const input = document.getElementById('imageInput');
+const browseBtn = document.getElementById('browseBtn');
+const changeBtn = document.getElementById('changeBtn');
+const uploadContent = document.getElementById('uploadContent');
+const previewBox = document.getElementById('previewBox');
+const preview = document.getElementById('imagePreview');
+const fileNameEl = document.getElementById('fileName');
+const fileSizeEl = document.getElementById('fileSize');
+const heifBadge = document.getElementById('heifBadge');
+const form = document.getElementById('convertForm');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+const progressPct = document.getElementById('progressPct');
+const convertBtn = document.getElementById('convertBtn');
+
+browseBtn.onclick = e => { e.stopPropagation(); input.click(); };
+changeBtn.onclick = e => { e.stopPropagation(); input.click(); };
+dropZone.onclick = () => { if (previewBox.style.display === 'none' || !previewBox.style.display) input.click(); };
+dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) { setFiles(e.dataTransfer.files); showPreview(e.dataTransfer.files[0]); } };
+input.onchange = () => { if (input.files[0]) showPreview(input.files[0]); };
+
+function setFiles(files) {
+    const dt = new DataTransfer();
+    dt.items.add(files[0]);
+    input.files = dt.files;
+}
+
+function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+}
+
+function showPreview(file) {
+    uploadContent.style.display = 'none';
+    previewBox.style.display = 'flex';
+    preview.style.display = 'none';
+    heifBadge.style.display = 'none';
+    fileNameEl.textContent = file.name;
+    fileSizeEl.textContent = fmtSize(file.size);
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'heic' || ext === 'heif') {
+        heifBadge.style.display = 'flex';
+        // backend preview
+        const fd = new FormData();
+        fd.append('image', file);
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/preview/', { method: 'POST', headers: { 'X-CSRFToken': csrf }, body: fd })
+            .then(r => r.json())
+            .then(d => {
+                if (d.preview) {
+                    preview.src = d.preview;
+                    preview.style.display = 'block';
+                    heifBadge.textContent = 'HEIC/HEIF preview';
+                }
+            })
+            .catch(() => { heifBadge.textContent = 'Preview unavailable'; });
+        return;
+    }
+    preview.style.display = 'block';
+    const reader = new FileReader();
+    reader.onload = e => preview.src = e.target.result;
+    reader.readAsDataURL(file);
+}
+
+// Show/hide ICO size selector
+const outputFormat = document.getElementById('outputFormat');
+const icoSizeGroup = document.getElementById('icoSizeGroup');
+outputFormat.onchange = () => {
+    icoSizeGroup.style.display = outputFormat.value === 'ICO' ? 'block' : 'none';
+};
+
+form.onsubmit = function() {
+    progressWrap.style.display = 'block';
+    convertBtn.disabled = true;
+    convertBtn.textContent = 'Converting…';
+    let pct = 0;
+    const steps = [10, 30, 60, 85, 95];
+    let i = 0;
+    const tick = setInterval(() => {
+        if (i < steps.length) { pct = steps[i++]; }
+        else { pct = Math.min(pct + 1, 99); }
+        progressBar.style.width = pct + '%';
+        progressPct.textContent = pct + '%';
+        if (pct >= 99) clearInterval(tick);
+    }, 180);
+    return true; // allow form submit
+};
 </script>
 
 </body>
