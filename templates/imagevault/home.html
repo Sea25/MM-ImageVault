@@ -16,6 +16,13 @@
 </header>
 
 <main class="main-content">
+
+    <!-- Progress bar (hidden until submit) -->
+    <div class="progress-wrap" id="progressWrap">
+        <div class="progress-label">Converting… <span id="progressPct">0%</span></div>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
     <section class="converter-card">
         <h2>Convert Image</h2>
         <form method="POST" enctype="multipart/form-data" id="convertForm">
@@ -79,12 +86,6 @@
         </form>
     </section>
 
-    <!-- Progress bar (hidden until submit) -->
-    <div class="progress-wrap" id="progressWrap">
-        <div class="progress-label">Converting… <span id="progressPct">0%</span></div>
-        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-    </div>
-
     <section class="results-section">
         <div class="results-header">
             <h2>Converted Images</h2>
@@ -108,7 +109,11 @@
                         <td class="date-cell expiry">{{ img.expires_at|date:"d M Y, h:i A" }}</td>
                         <td>
                             {% if img.converted_image %}
-                            <a href="{{ img.converted_image.url }}" download class="dl-btn">&#8595; Download</a>
+                                {% if '_ZIP' in img.output_format %}
+                                <a href="{{ img.converted_image.url }}" download class="dl-btn zip-btn">&#8681; Download ZIP</a>
+                                {% else %}
+                                <a href="{{ img.converted_image.url }}" download class="dl-btn">&#8595; Download</a>
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td>
@@ -177,10 +182,18 @@ function showPreview(file) {
     fileSizeEl.textContent = fmtSize(file.size);
 
     const ext = file.name.split('.').pop().toLowerCase();
-    if (ext === 'heic' || ext === 'heif' || ext === 'tiff' || ext === 'tif') {
+
+    // GIF — play animation natively
+    if (ext === 'gif') {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        return;
+    }
+
+    // HEIC, HEIF, TIFF — browser can't render, send to backend
+    if (['heic', 'heif', 'tiff', 'tif'].includes(ext)) {
         heifBadge.style.display = 'flex';
-        heifBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${ext.toUpperCase()} — preview loading…`;
-        // backend preview
+        heifBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>&nbsp;Loading preview…`;
         const fd = new FormData();
         fd.append('image', file);
         const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -190,12 +203,16 @@ function showPreview(file) {
                 if (d.preview) {
                     preview.src = d.preview;
                     preview.style.display = 'block';
-                    heifBadge.textContent = `${ext.toUpperCase()} preview`;
+                    heifBadge.style.display = 'none';
+                } else {
+                    heifBadge.innerHTML = 'Preview unavailable';
                 }
             })
-            .catch(() => { heifBadge.textContent = 'Preview unavailable'; });
+            .catch(() => { heifBadge.innerHTML = 'Preview unavailable'; });
         return;
     }
+
+    // All other formats
     preview.style.display = 'block';
     const reader = new FileReader();
     reader.onload = e => preview.src = e.target.result;

@@ -43,11 +43,11 @@ body{font-family:'Inter',Arial,sans-serif;background:#f0f2f8;color:#1a2236;font-
 
 /* Bottom row */
 .bottom-row{display:flex;gap:14px;align-items:flex-end}
-.format-group{display:flex;flex-direction:column;gap:6px;min-width:160px}
+.format-group{display:flex;flex-direction:column;gap:6px;flex:1}
 .format-group label{font-size:12px;font-weight:600;color:#6b7a99;text-transform:uppercase;letter-spacing:.06em}
 select{width:100%;height:44px;padding:0 12px;border-radius:9px;border:1px solid #d0d8ea;font-size:14px;font-family:inherit;background:#fff;color:#1a2236;cursor:pointer;outline:none}
 select:focus{border-color:#264fc4;box-shadow:0 0 0 3px rgba(38,79,196,.1)}
-.convert-btn{height:44px;padding:0 24px;background:#264fc4;color:#fff;border:none;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .15s;margin-left:auto}
+.convert-btn{height:44px;padding:0 24px;background:#264fc4;color:#fff;border:none;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .15s}
 .convert-btn:hover{background:#1d3f9d}
 .convert-btn:disabled{background:#8fa4d8;cursor:not-allowed}
 
@@ -73,6 +73,7 @@ tr:hover td{background:#f7f9ff}
 
 .dl-btn,.del-btn{display:inline-block;padding:6px 12px;border-radius:7px;text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap;transition:opacity .15s}
 .dl-btn{background:#166638;color:#fff}
+.zip-btn{background:#5a2d8c;margin-top:4px}
 .del-btn{background:#fdecea;color:#c0392b;border:1px solid #f5c6c2}
 .dl-btn:hover,.del-btn:hover{opacity:.85}
 
