@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.base import ContentFile
 from django.http import JsonResponse
-from PIL import Image
+from PIL import Image, ImageSequence
 from pillow_heif import register_heif_opener
 from .models import ConvertedImage
 from io import BytesIO
-import os, base64
+import os, base64, zipfile
 
 register_heif_opener()
 
@@ -36,33 +36,75 @@ def home(request):
             image = Image.open(converted.original_image.path)
             pillow_format, file_extension = PILLOW_FORMAT_MAP.get(output_format, ('PNG', 'png'))
 
-            # GIF: use first frame only
-            if hasattr(image, 'n_frames') and image.n_frames > 1:
-                image.seek(0)
+            is_animated = hasattr(image, 'n_frames') and image.n_frames > 1
 
-            # Mode conversions
-            if pillow_format == 'JPEG':
-                image = image.convert('RGB')
-            elif pillow_format == 'BMP':
-                image = image.convert('RGB')
-            elif pillow_format == 'ICO':
-                if ico_size != 'original' and ico_size in ICO_SIZES:
-                    image = image.resize(ICO_SIZES[ico_size], Image.LANCZOS)
-                if image.mode not in ('RGB', 'RGBA'):
-                    image = image.convert('RGBA')
-            elif pillow_format not in ('PNG', 'GIF', 'WEBP', 'TIFF'):
-                image = image.convert('RGB')
+            if is_animated:
+                # Load and copy all frames immediately to avoid lazy file pointer/seeking issues
+                frames = [f.copy() for f in ImageSequence.Iterator(image)]
+                image.close()
 
-            buffer = BytesIO()
-            if pillow_format == 'JPEG':
-                image.save(buffer, format='JPEG', quality=100)
-            elif pillow_format == 'ICO':
-                image.save(buffer, format='ICO', sizes=[(image.width, image.height)])
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    num_frames = len(frames)
+                    digits = len(str(num_frames))
+
+                    for i, frame in enumerate(frames):
+                        frame_image = frame.convert('RGBA')
+
+                        # Mode conversions
+                        if pillow_format == 'JPEG':
+                            frame_image = frame_image.convert('RGB')
+                        elif pillow_format == 'BMP':
+                            frame_image = frame_image.convert('RGB')
+                        elif pillow_format == 'ICO':
+                            if ico_size != 'original' and ico_size in ICO_SIZES:
+                                frame_image = frame_image.resize(ICO_SIZES[ico_size], Image.LANCZOS)
+                            if frame_image.mode not in ('RGB', 'RGBA'):
+                                frame_image = frame_image.convert('RGBA')
+                        elif pillow_format not in ('PNG', 'GIF', 'WEBP', 'TIFF'):
+                            frame_image = frame_image.convert('RGB')
+
+                        frame_buffer = BytesIO()
+                        if pillow_format == 'JPEG':
+                            frame_image.save(frame_buffer, format='JPEG', quality=100)
+                        elif pillow_format == 'ICO':
+                            frame_image.save(frame_buffer, format='ICO', sizes=[(frame_image.width, frame_image.height)])
+                        else:
+                            frame_image.save(frame_buffer, format=pillow_format)
+
+                        frame_filename = f"frame_{str(i+1).zfill(digits)}.{file_extension}"
+                        zip_file.writestr(frame_filename, frame_buffer.getvalue())
+
+                        frame_image.close()
+                        frame.close()
+
+                new_filename = os.path.splitext(uploaded_file.name)[0] + '_frames.zip'
+                content = ContentFile(zip_buffer.getvalue())
             else:
-                image.save(buffer, format=pillow_format)
+                # Mode conversions
+                if pillow_format == 'JPEG':
+                    image = image.convert('RGB')
+                elif pillow_format == 'BMP':
+                    image = image.convert('RGB')
+                elif pillow_format == 'ICO':
+                    if ico_size != 'original' and ico_size in ICO_SIZES:
+                        image = image.resize(ICO_SIZES[ico_size], Image.LANCZOS)
+                    if image.mode not in ('RGB', 'RGBA'):
+                        image = image.convert('RGBA')
+                elif pillow_format not in ('PNG', 'GIF', 'WEBP', 'TIFF'):
+                    image = image.convert('RGB')
 
-            new_filename = os.path.splitext(uploaded_file.name)[0] + '.' + file_extension
-            content = ContentFile(buffer.getvalue())
+                buffer = BytesIO()
+                if pillow_format == 'JPEG':
+                    image.save(buffer, format='JPEG', quality=100)
+                elif pillow_format == 'ICO':
+                    image.save(buffer, format='ICO', sizes=[(image.width, image.height)])
+                else:
+                    image.save(buffer, format=pillow_format)
+
+                new_filename = os.path.splitext(uploaded_file.name)[0] + '.' + file_extension
+                content = ContentFile(buffer.getvalue())
+
             converted.converted_image.save(new_filename, content, save=False)
             converted.converted_file_size = content.size
             converted.save()

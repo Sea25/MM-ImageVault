@@ -177,8 +177,9 @@ function showPreview(file) {
     fileSizeEl.textContent = fmtSize(file.size);
 
     const ext = file.name.split('.').pop().toLowerCase();
-    if (ext === 'heic' || ext === 'heif') {
+    if (ext === 'heic' || ext === 'heif' || ext === 'tiff' || ext === 'tif') {
         heifBadge.style.display = 'flex';
+        heifBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${ext.toUpperCase()} — preview loading…`;
         // backend preview
         const fd = new FormData();
         fd.append('image', file);
@@ -189,7 +190,7 @@ function showPreview(file) {
                 if (d.preview) {
                     preview.src = d.preview;
                     preview.style.display = 'block';
-                    heifBadge.textContent = 'HEIC/HEIF preview';
+                    heifBadge.textContent = `${ext.toUpperCase()} preview`;
                 }
             })
             .catch(() => { heifBadge.textContent = 'Preview unavailable'; });
